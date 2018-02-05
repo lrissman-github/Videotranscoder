@@ -1,69 +1,75 @@
 #Configuration file for Videotranscoder: https://github.com/lrissman-github/Videotranscoder
-####### Paths #######
 #Note: Relative paths will be based on the base path
+######Runtime configs#####
+
+mode: crf #Default mode: crf or 2pass
+scale: off #default scaling: off, 480p, 720p, 1080p, or uhd
+vcodec: hevc #default output video codec: avc, hevc, vp9
+####### Paths #######
+
 
 #Working Directories
-- base: "c:\transcode"     #location of this script
-- input: input
-- output: ouptut
-- unknown: unkonwn
-- bad: bad
-- multiaudio: multi
+base: 'c:\transcode'     #location of this script
+input: input
+output: ouptut
+unknown: unkonwn
+bad: bad
+multiaudio: multi
 
 #Tools
 #Windows
-- tool:
-  - ffmpeg: "tools\ffmpeg.exe"
-  - mkvextract: "tools\mkvtoolnix\mkvextract.exe"
-  - mkvmerge: "tools\mkvtoolnix\mkvmerge.exe"
-  - mediainfo: "tools\mediaInfo_cli\Mediainfo.exe"
-  - mediainfotemplate: "tools\mediaInfo_cli\Transcode.csv"
+tool:
+ ffmpeg: 'tools\ffmpeg.exe'
+ mkvextract: 'tools\mkvtoolnix\mkvextract.exe'
+ mkvmerge: 'tools\mkvtoolnix\mkvmerge.exe'
+ mediainfo: 'tools\mediaInfo_cli\Mediainfo.exe'
+ mediainfotemplate: 'tools\mediaInfo_cli\Transcode.csv'
 #Linux
-  #- ffmpeg: "/usr/bin/ffmpeg"
-  #- mkvextract: "/usr/bin/mkvextract"
-  #- mkvmerge: "/usr/bin/mkvmerge.exe"
+ #- ffmpeg: '/usr/bin/ffmpeg'
+ #- mkvextract: '/usr/bin/mkvextract'
+ #- mkvmerge: '/usr/bin/mkvmerge.exe'
 
 ####### Containers/Files #######
-#These are container types that will be allowed, all others will be moved to "unknown folder"
+#These are container types that will be allowed, all others will be moved to 'unknown folder'
 #   Note: FFMPEG must support any added here
-- SupportedInputContainers:
-  - avi
-  - avs
-  - divx
-  - m2ts
-  - m4v
-  - mkv
-  - mov
-  - mp4
-  - mpeg
-  - mpg
-  - ogm
-  - vob
-  - webm
-  - wmv
+SupportedInputContainers:
+ - avi
+ - avs
+ - divx
+ - m2ts
+ - m4v
+ - mkv
+ - mov
+ - mp4
+ - mpeg
+ - mpg
+ - ogm
+ - vob
+ - webm
+ - wmv
 
 # This is a list of other files, if found, will be moved with the video
-- ExtraFilesExtensions:
-  - idx
-  - sub
-  - srt
-  - ass
-  - smi
+ExtraFilesExtensions:
+ - idx
+ - sub
+ - srt
+ - ass
+ - smi
 
 ####### Codecs #######
 # Note: These Codec names must be written as Mediainfo will report them and supported by FFMPEG
 
 # list of video codecs that could have worthwhile video quality
-- SupportedInputVideoCodecs:
+SupportedInputVideoCodecs:
  - AVC
  - avc1
  - DX50
  - HEVC
  - High Efficiency Video Coding
  - Microsoft
- - "MPEG-4 Visual"
+ - 'MPEG-4 Visual'
  - MPEG Video
- - "VC-1"
+ - 'VC-1'
  - V_MPEG4/ISO/AVC
  - V_MPEGH/ISO/HEVC
  - WMV3
@@ -71,14 +77,14 @@
  - xvid
 
 # Any input video with these will be moved to Bad -- typically codecs known to have a terrible source quality
-- UnsupportedInputVideoCodecs:
+UnsupportedInputVideoCodecs:
  - DIV3
  - DivX 4
 
-- SupportedInputAudioCodecs:
+SupportedInputAudioCodecs:
  - AAC
- - "AC-3"
- - "E-AC-3"
+ - 'AC-3'
+ - 'E-AC-3'
  - MPEG Audio
  - WMA
  - DTS
@@ -94,91 +100,91 @@
 # Note: for Mediainfo, 1K = 1000
 
 # If a input vidoe codec is larger by this percentage, it will transcode the video
-- TargetBitRateVariancePercent: 10
+TargetBitRateVariancePercent: 10
 
-- AVCTargetBitRate:
-  - 480p: 699000
-  - 720p: 1500000
-  - 1080p: 2200000
-  - UHD: 7000000
+AVCTargetBitRate:
+ 480p: 699000
+ 720p: 1500000
+ 1080p: 2200000
+ UHD: 7000000
 
-- HEVCTargetBitRate:
-  - 480p: 300000
-  - 720p: 720000
-  - 1080p: 1300000
-  - UHD: 3500000
+HEVCTargetBitRate:
+ 480p: 300000
+ 720p: 720000
+ 1080p: 1300000
+ UHD: 3500000
 
-- VP9TargetBitRate:
-  - 480p: 300000
-  - 720p: 720000
-  - 1080p: 1300000
-  - UHD: 3500000
+VP9TargetBitRate:
+ 480p: 300000
+ 720p: 720000
+ 1080p: 1300000
+ UHD: 3500000
 
-- AACTargetBitRate:
-  - 2ch: 64000
-  - 6ch: 256000
+AACTargetBitRate:
+ 2ch: 64000
+ 6ch: 256000
 
 #CRF - Higher = better quality
 # AVC/HEVC CRF: http://slhck.info/video/2017/02/24/crf-guide.html
 # VP9 CRF: https://superuser.com/questions/1042194/settings-for-ffmpeg-for-best-vp9-quality-for-web-publishing#1042290
 
-- AVCCRF:
-  - 480p: 26
-  - 720p: 24
-  - 1080p: 23
-  - UHD: 21
+AVCCRF:
+ 480p: 26
+ 720p: 24
+ 1080p: 23
+ UHD: 21
 
-- HEVCCRF:
-  - 480p: 26
-  - 720p: 24
-  - 1080p: 23
-  - UHD: 21
+HEVCCRF:
+ 480p: 26
+ 720p: 24
+ 1080p: 23
+ UHD: 21
 
-- VP9CRF:
-  - 480p: 26
-  - 720p: 24
-  - 1080p: 23
-  - UHD: 21
+VP9CRF:
+ 480p: 26
+ 720p: 24
+ 1080p: 23
+ UHD: 21
 
 ####### Encoder Settings #######
 #  This section is to setup the encoder settings.  Edit this area with care as it could easily break
 # Note: AT this time, only FFMPEG is supported.  Future versions are intended to include support for hardware encoders
 
-- AVCEncoder:
-  - 480p: ffmpeg
-  - 720p: ffmpeg
-  - 1080p: ffmpeg
-  - UHD: ffmpeg
+AVCEncoder:
+ 480p: ffmpeg
+ 720p: ffmpeg
+ 1080p: ffmpeg
+ UHD: ffmpeg
 
-- HEVCEncoder:
-  - 480p: ffmpeg
-  - 720p: ffmpeg
-  - 1080p: ffmpeg
-  - UHD: ffmpeg
+HEVCEncoder:
+ 480p: ffmpeg
+ 720p: ffmpeg
+ 1080p: ffmpeg
+ UHD: ffmpeg
 
-- VP9Encoder:
-  - 480p: ffmpeg
-  - 720p: ffmpeg
-  - 1080p: ffmpeg
-  - UHD: ffmpeg
+VP9Encoder:
+ 480p: ffmpeg
+ 720p: ffmpeg
+ 1080p: ffmpeg
+ UHD: ffmpeg
 
 #Encoder parameters
 
 #Note Target Bitrate/CRF is appended to this string, so -crf or -b:v must be the last parameter with a trailing space
 # VP9 is not implemented yet.
-- FFMPEG:
-  - AVC:
-    - copy:"-vcodec copy"
-    - pass1:"-vcodec libx264 -profile:v high -level 41 -preset fast -b:v "
-    - pass2:"-vcodec libx264 -profile:v high -level 41 -preset slow -b:v "
-    - crf:"-vcodec libx264 -profile:v high -level 41 -preset slow -crf "
-  - HEVC:
-    - copy:"-vcodec copy"
-    - pass1:"-vcodec libx265 -preset fast -b:v "
-    - pass2:"-vcodec libx265 -preset slow -b:v "
-    - crf:"-vcodec libx265 -preset medium -x265-params crf "
-  - AAC:
-    - copy:"-acodec copy"
-    - 2ch:"-acodec aac -ac 2 -strict -2 -ab "
-    - 6ch:"-acodec aac -ac 6 -strict -2 -ab "
+FFMPEG:
+  AVC:
+   copy:'-vcodec copy'
+   pass1:'-vcodec libx264 -profile:v high -level 41 -preset fast -b:v '
+   pass2:'-vcodec libx264 -profile:v high -level 41 -preset slow -b:v '
+   crf:'-vcodec libx264 -profile:v high -level 41 -preset slow -crf '
+  HEVC:
+   copy:'-vcodec copy'
+   pass1:'-vcodec libx265 -preset fast -b:v '
+   pass2:'-vcodec libx265 -preset slow -b:v '
+   crf:'-vcodec libx265 -preset medium -x265-params crf '
+  AAC:
+   copy:'-acodec copy'
+   2ch:'-acodec aac -ac 2 -strict -2 -ab '
+   6ch:'-acodec aac -ac 6 -strict -2 -ab '
 
