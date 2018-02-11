@@ -9,12 +9,12 @@ vcodec: hevc #default output video codec: avc, hevc, vp9
 
 
 #Working Directories
-base: 'c:\transcode'     #location of this script
-input: input
-output: ouptut
-unknown: unkonwn
-bad: bad
-multiaudio: multi
+base: 'C:\Users\lriss\PycharmProjects\Videotranscoder'     #location of this script
+input: 'c:\videoprocessing\input'
+output: 'c:\videoprocessing\output'
+unknown: 'c:\videoprocessing\unknown'
+bad: 'c:\videoprocessing\bad'
+multiaudio: 'c:\videoprocessing\multi'
 
 #Tools
 #Windows
@@ -33,28 +33,28 @@ tool:
 #These are container types that will be allowed, all others will be moved to 'unknown folder'
 #   Note: FFMPEG must support any added here
 SupportedInputContainers:
- - avi
- - avs
- - divx
- - m2ts
- - m4v
- - mkv
- - mov
- - mp4
- - mpeg
- - mpg
- - ogm
- - vob
- - webm
- - wmv
+ - .avi
+ - .avs
+ - .divx
+ - .m2ts
+ - .m4v
+ - .mkv
+ - .mov
+ - .mp4
+ - .mpeg
+ - .mpg
+ - .ogm
+ - .vob
+ - .webm
+ - .wmv
 
 # This is a list of other files, if found, will be moved with the video
 ExtraFilesExtensions:
- - idx
- - sub
- - srt
- - ass
- - smi
+ - .idx
+ - .sub
+ - .srt
+ - .ass
+ - .smi
 
 ####### Codecs #######
 # Note: These Codec names must be written as Mediainfo will report them and supported by FFMPEG

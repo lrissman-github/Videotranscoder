@@ -15,7 +15,7 @@ The purpose of this project is to create a transcoding script that is windows an
         - resolutions
         - target bitrate for 2 pass
         - crf for 1 pass
-- Create watcher script
+- Create processing script
     - Intented to be included in a schedular
     - will check for running transcodes
     - will look for new content in input folder
@@ -23,3 +23,5 @@ The purpose of this project is to create a transcoding script that is windows an
     - will launch transcodes based on settings using ffmpeg
 - consider using CUDA, NVENC, and Intel QuickSync as options
        
+Icebox
+- Validate config file has all the right options and the options have valid entries
