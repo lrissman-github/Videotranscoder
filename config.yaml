@@ -7,7 +7,8 @@ scale: off #default scaling: off, 480p, 720p, 1080p, or uhd
 vcodec: hevc #default output video codec: avc, hevc, vp9
 ####### Paths #######
 
-
+logfile: 'c:\videoprocessing\videotranscoder.log'
+loglevel: 'debug'  #info, warning, or debug
 #Working Directories
 base: 'C:\Users\lriss\PycharmProjects\Videotranscoder'     #location of this script
 input: 'c:\videoprocessing\input'
