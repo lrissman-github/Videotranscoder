@@ -7,11 +7,13 @@ import argparse #required to process arguments
 import os #Required to be cross platform
 import time #Only required for debugging
 import sys #Required for sys.exit() calls
+import subprocess #REquired to launch programs like ffmpeg and ffprobe
 #from pymediainfo import MediaInfo https://pymediainfo.readthedocs.io/en/latest/
 #I didnt like it, so i'll write my own.
 import fnmatch
 from datetime import datetime
 import logging
+import json
 
 version = '0.1 alpha'
 ### Functions
@@ -116,6 +118,7 @@ config['unknown'] = absolutepath( config['base'], config['unknown'] )
 config['bad'] = absolutepath( config['base'], config['bad'] )
 config['multiaudio'] = absolutepath( config['base'], config['multiaudio'] )
 config['tool']['ffmpeg'] = absolutepath(config['base'], config['tool']['ffmpeg'])
+config['tool']['ffprobe'] = absolutepath(config['base'], config['tool']['ffprobe'])
 config['tool']['mkvextract'] = absolutepath(config['base'], config['tool']['mkvextract'])
 config['tool']['mkvmerge'] = absolutepath(config['base'], config['tool']['mkvmerge'])
 config['tool']['mediainfo'] = absolutepath(config['base'], config['tool']['mediainfo'])
@@ -145,6 +148,15 @@ videofoldercheck(config['bad'])
 videofoldercheck(config['multiaudio'])
 
 #intiail verify of existance of required tools
+# FFPROBE
+if os.path.isfile (config['tool']['ffprobe']):
+    output(("FFPRobe exec found"),'debug')
+else:
+    exitmessage = "FFProbe not found at ",config['tool']['ffprobe']
+    output(exitmessage,'info')
+    sys.exit(exitmessage)
+
+# MediaInfo
 if os.path.isfile (config['tool']['mediainfo']):
     output(("mediainfo exec found"),'debug')
 else:
@@ -188,6 +200,42 @@ for filename in filematches:
 
     output(("Will process this file: ",filename),'info')
     #Check for subtitles and extract to complete dir
+
+
+    #def getLength(filename):
+    #    result = subprocess.Popen(["ffprobe", filename],
+    #                              stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    #    return [x for x in result.stdout.readlines() if "Duration" in x]
+    command = [config['tool']['ffprobe'],
+            "-loglevel",  "quiet",
+            "-print_format", "json",
+             "-show_format",
+             "-show_streams",
+             filename
+             ]
+
+    pipe = subprocess.Popen(command,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+    out,err = pipe.communicate()
+    #    return [x for x in result.stdout.readlines() if "Duration" in x]
+    out = out.decode('utf-8')
+    mediainfo = json.loads(out)
+    print (mediainfo)
+    for stream in mediainfo['streams']:
+        print (stream['codec_type'])
+        if stream['codec_type'] == 'audio':
+            print ('Found Audio Stream')
+            print ('Codec Name: ', stream['codec_name'])
+            print ('channels: ', stream['channels'])
+            print ('BitRate: ', stream['bit_rate'])
+        if stream['codec_type'] == 'video':
+            print('Found Video Stream')
+            print('Codec Name: ', stream['codec_name'])
+            print('width: ', stream['width'])
+            print('height: ', stream['height'])
+            print('BitRate: ', stream['bit_rate'])
+            #IS there a CRF value if the video was CRF encoded
+        # other types of streams like subtitles
+
 
     #Get mediainfo
 

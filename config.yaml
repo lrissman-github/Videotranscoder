@@ -20,7 +20,8 @@ multiaudio: 'c:\videoprocessing\multi'
 #Tools
 #Windows
 tool:
- ffmpeg: 'tools\ffmpeg.exe'
+ ffmpeg: 'tools\ffmpeg\ffmpeg.exe'
+ ffprobe: 'tools\ffmpeg\ffprobe.exe'
  mkvextract: 'tools\mkvtoolnix\mkvextract.exe'
  mkvmerge: 'tools\mkvtoolnix\mkvmerge.exe'
  mediainfo: 'tools\mediaInfo_cli\Mediainfo.exe'
