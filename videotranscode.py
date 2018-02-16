@@ -10,10 +10,11 @@ import sys #Required for sys.exit() calls
 import subprocess #REquired to launch programs like ffmpeg and ffprobe
 #from pymediainfo import MediaInfo https://pymediainfo.readthedocs.io/en/latest/
 #I didnt like it, so i'll write my own.
-import fnmatch
+import fnmatch #Required to match multiple files
 from datetime import datetime
-import logging
-import json
+import logging # Required for log output
+import json # Required to get output from ffprobe
+import shutil # Required for moving files
 
 version = '0.1 alpha'
 ### Functions
@@ -57,6 +58,12 @@ def output ( message, msgloglevel) :
         elif msgloglevel == 'debug':
             logging.debug(message)
     return;
+
+#def run_command(command):
+#    p = subprocess.Popen(command,
+#                         stdout=subprocess.PIPE,
+#                         stderr=subprocess.STDOUT)
+#    return iter(p.stdout.readline, b'')
 
 ## Configs
 with open('config.yaml') as f:
@@ -119,15 +126,6 @@ config['bad'] = absolutepath( config['base'], config['bad'] )
 config['multiaudio'] = absolutepath( config['base'], config['multiaudio'] )
 config['tool']['ffmpeg'] = absolutepath(config['base'], config['tool']['ffmpeg'])
 config['tool']['ffprobe'] = absolutepath(config['base'], config['tool']['ffprobe'])
-config['tool']['mkvextract'] = absolutepath(config['base'], config['tool']['mkvextract'])
-config['tool']['mkvmerge'] = absolutepath(config['base'], config['tool']['mkvmerge'])
-config['tool']['mediainfo'] = absolutepath(config['base'], config['tool']['mediainfo'])
-config['tool']['mediainfotemplate'] = absolutepath(config['base'], config['tool']['mediainfotemplate'])
-# ffmpeg: 'tools\ffmpeg.exe'
-# mkvextract: 'tools\mkvtoolnix\mkvextract.exe'
-# mkvmerge: 'tools\mkvtoolnix\mkvmerge.exe'
-# mediainfo: 'tools\mediaInfo_cli\Mediainfo.exe'
-# mediainfotemplate: 'tools\mediaInfo_cli\Transcode.csv'
 
 #Welcome messages
 output('############################','info')
@@ -156,24 +154,22 @@ else:
     output(exitmessage,'info')
     sys.exit(exitmessage)
 
-# MediaInfo
-if os.path.isfile (config['tool']['mediainfo']):
-    output(("mediainfo exec found"),'debug')
+# FFMPEG
+if os.path.isfile (config['tool']['ffmpeg']):
+    output(("FFMPEG exec found"),'debug')
 else:
-    exitmessage = "MediaInfo exe not found at ",config['tool']['mediainfo']
-    output(exitmessage,'info')
-    sys.exit(exitmessage)
-if os.path.isfile (config['tool']['mediainfotemplate']):
-    output(("mediainfo template found"),'debug')
-else:
-    exitmessage = "MediaInfo template not found at ", config['tool']['mediainfotemplate']
+    exitmessage = "FFmpeg not found at ",config['tool']['ffmpeg']
     output(exitmessage,'info')
     sys.exit(exitmessage)
 
 filematches = []
 for root, dirnames, filenames in os.walk(config['input']):
-    for filename in fnmatch.filter(filenames, '*.mp4'):
-        filematches.append(os.path.join(root, filename))
+#    for filename in fnmatch.filter(filenames, config['SupportedInputContainers']):
+    output(("config-supportedinput: ",config['SupportedInputContainers']),debug)
+    for filename in filenames:
+        if filename.lower().endswith(tuple(config['SupportedInputContainers'])):
+            output(("matched filename: ",filename),debug)
+            filematches.append(os.path.join(root, filename))
 
 output(("file Matches: ",filematches),'debug')
 output(("all Filenames:", filenames),'debug')
@@ -182,6 +178,7 @@ numfilenames = len(filenames)
 ############  Enter processor/encoder loop
 
 #Lets process all matches
+
 for filename in filematches:
     #Get list of files from input path, recursive
     #find a good video file
@@ -199,13 +196,8 @@ for filename in filematches:
         continue
 
     output(("Will process this file: ",filename),'info')
-    #Check for subtitles and extract to complete dir
 
-
-    #def getLength(filename):
-    #    result = subprocess.Popen(["ffprobe", filename],
-    #                              stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    #    return [x for x in result.stdout.readlines() if "Duration" in x]
+    # Get Media Info
     command = [config['tool']['ffprobe'],
             "-loglevel",  "quiet",
             "-print_format", "json",
@@ -219,25 +211,98 @@ for filename in filematches:
     #    return [x for x in result.stdout.readlines() if "Duration" in x]
     out = out.decode('utf-8')
     mediainfo = json.loads(out)
-    print (mediainfo)
+    if 'streams' not in mediainfo:  #Media has no streams = bad media
+        output (('No stream information detected in file: ', filename),'info')
+        videofoldercheck(config['bad'])
+        shutil.move(filename,os.path.join(config['bad'],os.path.basename(filename)))
+        continue
+    numaudiostreams = 0
+    #SEtup input mediainfo dict
+    output('Raw Data from Media Container',debug)
+    output(mediainfo,debug)
+    containerinfo = {'vCodec':'',  #Video Codec Type
+                 'vBitRate':0, #Video Bitrate -- note, sometimes ffprobe does not return a bitrate, then calculate
+                 'vWidth':0, #Video Resolution Width
+                 'vHeight':0, #Video Resolution Hight
+                 'aCodec':'', #Audio Codec -- Note, Script can only process 1 audio stream, if multiple, move to multi
+                 'aBitRate':0, #Audio Bitrate
+                 'aChannels':0, #Audio Channels
+                 'cTitle':'', #Container title -- Always reset to empty for ffmpeg to clear originally stored title
+                 'cDuration':0, #Container Duration
+                 'cBitRate':0, #container Bitrate
+                 'cSize':0 #Container Size
+                 }
+
+    containerinfo['cBitRate'] = int(mediainfo['format']['bit_rate'])
+    containerinfo['cDuration'] = float(mediainfo['format']['duration'])
+    containerinfo['cSize'] = int(mediainfo['format']['size'])
+
     for stream in mediainfo['streams']:
-        print (stream['codec_type'])
+        output (('Stream Found: ',stream['codec_type']),debug)
         if stream['codec_type'] == 'audio':
-            print ('Found Audio Stream')
-            print ('Codec Name: ', stream['codec_name'])
-            print ('channels: ', stream['channels'])
-            print ('BitRate: ', stream['bit_rate'])
+            numaudiostreams = numaudiostreams + 1
+            output(('Number of Audio Streams :',numaudiostreams),debug)
+            containerinfo['aCodec'] = stream['codec_name']
+            containerinfo['aChannels'] = int(stream['channels'])
+            containerinfo['aBitRate'] = int(stream['bit_rate'])
         if stream['codec_type'] == 'video':
-            print('Found Video Stream')
-            print('Codec Name: ', stream['codec_name'])
-            print('width: ', stream['width'])
-            print('height: ', stream['height'])
-            print('BitRate: ', stream['bit_rate'])
+            containerinfo['vCodec'] = stream['codec_name']
+            containerinfo['vHeight'] = int(stream['height'])
+            containerinfo['vWidth'] = int(stream['width'])
+            #Sometimes video channels do not have bitrate, if not included, calculate after all channel processing
+            if 'bit_rate' not in stream:
+                output("No Bitrate found in ffprobe output",debug)
+            else:
+                containerinfo['vBitRate'] = int(stream['bit_rate'])
             #IS there a CRF value if the video was CRF encoded
         # other types of streams like subtitles
+    if containerinfo['vBitRate'] == 0:  #no bitrate previously found
+        containerinfo['vBitRate'] = containerinfo['cBitRate'] - containerinfo['aBitRate']
 
+    if numaudiostreams > 1:
+        output(('More than one Audio track Found:', numaudiostreams),debug )
+        videofoldercheck(config['multiaudio'])
+        shutil.move(filename, os.path.join(config['multiaudio'],os.path.basename(filename)))
+        continue
+        # Move to "multi folder"
+    #End Info Gathering
 
-    #Get mediainfo
+    #Subtitle extractor
+    subtitlecount = -1  #First subtitle is 0
+    for stream in mediainfo['streams']:
+        if stream['codec_type'] == 'subtitle':
+            output('found Subtitle',debug)
+            subtitlecount = subtitlecount + 1
+            if stream['codec_name'] in config['SupportedInputSubtitles']:
+                output (('found supported codec: ',stream['codec_name']),debug)
+                output (('language is: ',stream['tags']['language']),debug)
+                #Launch FFMEPG to extract subtitle
+                if 'language' in stream['tags']:
+                    lang = stream['tags']['language']
+                else:
+                    lang = ''
+
+                if 'title' in stream['tags']:
+                    subtitle = stream['tags']['title']
+                else:
+                    subtitle = ''
+                output(('testingoutputfolder', config['output']), debug)
+                output(('basefilename ',basefilename),debug)
+                subtitlefile = os.path.join(config['output'],(os.path.basename(filename)+'-'+lang+'-'+subtitle+'-'+str(subtitlecount)+'.srt'))
+                output (('output subtitle name is: ',subtitlefile),debug)
+                subtitlemap = "0:s:"+str(subtitlecount)
+                command = [config['tool']['ffmpeg'],
+                           "-i", filename,
+                           "-map", subtitlemap,
+                           "-y",
+                            subtitlefile
+                           ]
+                output (('extract command: ',command),debug)
+                cmd = config['tool']['ffmpeg']+" -i "+filename+" -map "+subtitlemap+" -y "+ subtitlefile
+                process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
+                for line in process.stdout:
+                    output(line,'info')
+    #END Subtitle Extractor
 
     #Does video need scale
 

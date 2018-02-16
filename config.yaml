@@ -22,10 +22,6 @@ multiaudio: 'c:\videoprocessing\multi'
 tool:
  ffmpeg: 'tools\ffmpeg\ffmpeg.exe'
  ffprobe: 'tools\ffmpeg\ffprobe.exe'
- mkvextract: 'tools\mkvtoolnix\mkvextract.exe'
- mkvmerge: 'tools\mkvtoolnix\mkvmerge.exe'
- mediainfo: 'tools\mediaInfo_cli\Mediainfo.exe'
- mediainfotemplate: 'tools\mediaInfo_cli\Transcode.csv'
 #Linux
  #- ffmpeg: '/usr/bin/ffmpeg'
  #- mkvextract: '/usr/bin/mkvextract'
@@ -94,6 +90,9 @@ SupportedInputAudioCodecs:
  - WMA
  - Atmos / TrueHD
  - FLAC
+
+SupportedInputSubtitles:
+  - subrip
 
 ####### Quality/Resolution #######
 #  This section is to define the minimums and maximums that the script will use to determine if a stream needs transcocding.
