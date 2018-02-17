@@ -14,8 +14,9 @@ from datetime import datetime
 import logging # Required for log output
 import json # Required to get output from ffprobe
 import shutil # Required for moving files
+import tempfile  # Required for temp file name
 
-version = '0.1 alpha'
+version = '0.2 beta'
 ### Functions
 
 def videofoldercheck( str ):
@@ -71,9 +72,9 @@ if config['loglevel'] not in ['debug', 'warning', 'info']:
     output((' - loglevel value,', config['loglevel'], 'in config file invalid, setting to debug'), 'debug')
     config['loglevel'] = 'debug'
 
-output("after yaml load",'debug')
-output(config,'debug')
-output(("config.mode", config['mode']),'debug')
+# output("after yaml load",'debug')
+# output(config,'debug')
+# output(("config.mode", config['mode']),'debug')
 
 #Get Arguments
 parser = argparse.ArgumentParser(description='This is a video transcoding script')
@@ -125,7 +126,7 @@ if config['scale'] not in ['none', '480p', '720p', '1080p', 'uhd']:
     output(('scale value,', config['scale'], 'in config file invalid, setting scale to none'), 'debug')
     config['scale'] = 'none'
 
-output(("final config after arguments",config),'debug')
+# output(("final config after arguments",config),'debug')
 
 
 #Make paths absolute
@@ -207,6 +208,9 @@ for filename in filematches:
         continue
 
     output(("Will process this file: ",filename),'info')
+    # Create lock file
+    lockfile = filename + ".lock"
+    open(x, lockfile).close()
 
     # Get Media Info
     command = [config['tool']['ffprobe'],
@@ -229,8 +233,8 @@ for filename in filematches:
         continue
     numaudiostreams = 0
     #SEtup input mediainfo dict
-    output('Raw Data from Media Container',debug)
-    output(mediainfo,debug)
+    #    output('Raw Data from Media Container',debug)
+    #    output(mediainfo,debug)
     containerinfo = {'vCodec':'',  #Video Codec Type
                      'vBitRate': 0,
                      # Video Bitrate -- note, sometimes ffprobe does not return a bitrate, then calculate
@@ -418,11 +422,33 @@ for filename in filematches:
                     encoderaudiocmd = config['FFMPEG'][codec]['copy']
                     break
 
+    # create tempfile name for encoding
+    temp_name = next(tempfile._get_candidate_names())
+    temp_name = os.path.basename(filename) + "." + temp_name + ".mp4"
+    print(temp_name)
+    # Build FFMPEG command
+    if config['mode'] == 'crf':
+        ffmpegcmd = encoderbasecmd + " -i \"" + filename + "\" " + encodervideocmd + encoderscalecmd + " " + encoderaudiocmd + " " + os.path.join(
+            config['input'], temp_name)
+
     output(("Encoder Video Switches :") + encodervideocmd, 'debug')
     output(("Encoder Audio Switches :") + encoderaudiocmd, 'debug')
     output(("Encoder Scale switches :") + encoderscalecmd, 'debug')
+    output(("Completed combined: ") + ffmpegcmd, 'debug')
     #Transcode here
-
+    process = subprocess.Popen(ffmpegcmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                               universal_newlines=True)
+    for line in process.stdout:
+        output(line, 'info')
     #Move transcode results here
+    videofoldercheck(config['output'])
+    shutil.move(os.path.join(config['input'], temp_name),
+                os.path.join(config['output'], os.path.basename(filename)))  # Move temp file to new file name
+    videofoldercheck(config['output'])
+    shutil.move(filename,
+                os.path.join(config['output'], (os.path.basename(
+                    filename) + ".original")))  # Move original file with ".original" on the end
+    # Delete lock file
+    os.remove(lockfile)
 
 output(("End program"),'debug')

@@ -185,7 +185,7 @@ FFMPEG:
    copy: '-map_metadata -1 -vcodec copy'
    pass1: '-map_metadata -1 -vcodec libx265 -preset fast -b:v '
    pass2: '-map_metadata -1 -vcodec libx265 -preset slow -b:v '
-   crf: '-map_metadata -1 -vcodec libx265 -preset medium -x265-params crf '
+   crf: '-map_metadata -1 -vcodec libx265 -preset medium -x265-params crf='
   vp9:  #incomplete
    copy: '-map_metadata -1 -vcodec copy'
    pass1: '-map_metadata -1 -vcodec libvpx-vp9 -quality good -b:v '
