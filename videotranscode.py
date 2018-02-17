@@ -241,8 +241,7 @@ for filename in filematches:
                      # Audio Codec -- Note, Script can only process 1 audio stream, if multiple, move to multi
                      'aBitRate': 0,  # Audio Bitrate
                      'aChannels': 0,  # Audio Channels
-                     'cTitle': '',
-                     # Container title -- Always reset to empty for ffmpeg to clear originally stored title
+                     # Container information
                      'cDuration': 0,  # Container Duration
                      'cBitRate': 0,  # container Bitrate
                      'cSize': 0  # Container Size
@@ -377,9 +376,9 @@ for filename in filematches:
         if config['vcodec'] == codec:
             for resolution in ['480p', '720p', '1080p', 'UHD', '8kUHD']:
                 print("testing " + resolution)
-                if (containerinfo['vResolution'] == resolution) and (
+                if (containerinfo['vResolution'] == resolution) and ((
                         containerinfo['vBitRate'] > (config['TargetBitRate'][codec][resolution]) *
-                        config['TargetBitRate']['vVariance']):
+                        config['TargetBitRate']['vVariance']) or config['scale'] != 'none'):
                     print(resolution + " transcode")
                     if config['mode'] == 'crf':
                         encodervideocmd = (config['FFMPEG'][codec]['crf'] + str(config['TargetCRF'][codec][resolution]))

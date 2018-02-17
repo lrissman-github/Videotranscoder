@@ -177,20 +177,20 @@ VP9Encoder:
 
 FFMPEG:
   avc:
-   copy: '-vcodec copy'
-   pass1: '-vcodec libx264 -profile:v high -level 41 -preset fast -b:v '
-   pass2: '-vcodec libx264 -profile:v high -level 41 -preset slow -b:v '
-   crf: '-vcodec libx264 -profile:v high -level 41 -preset slow -crf '
+   copy: '-map_metadata -1 -vcodec copy'
+   pass1: '-map_metadata -1 -vcodec libx264 -profile:v high -level 41 -preset fast -b:v '
+   pass2: '-map_metadata -1 -vcodec libx264 -profile:v high -level 41 -preset slow -b:v '
+   crf: '-map_metadata -1 -vcodec libx264 -profile:v high -level 41 -preset slow -crf '
   hevc:
-   copy: '-vcodec copy'
-   pass1: '-vcodec libx265 -preset fast -b:v '
-   pass2: '-vcodec libx265 -preset slow -b:v '
-   crf: '-vcodec libx265 -preset medium -x265-params crf '
+   copy: '-map_metadata -1 -vcodec copy'
+   pass1: '-map_metadata -1 -vcodec libx265 -preset fast -b:v '
+   pass2: '-map_metadata -1 -vcodec libx265 -preset slow -b:v '
+   crf: '-map_metadata -1 -vcodec libx265 -preset medium -x265-params crf '
   vp9:  #incomplete
-   copy: '-vcodec copy'
-   pass1: '-vcodec libvpx-vp9 -quality good -b:v '
-   pass2: '-vcodec libvpx-vp9 -quality good -b:v '
-   crf: '-vcodec libvpx-vp9 -quality good -crf '
+   copy: '-map_metadata -1 -vcodec copy'
+   pass1: '-map_metadata -1 -vcodec libvpx-vp9 -quality good -b:v '
+   pass2: '-map_metadata -1 -vcodec libvpx-vp9 -quality good -b:v '
+   crf: '-map_metadata -1 -vcodec libvpx-vp9 -quality good -crf '
   aac:
    copy: '-acodec copy'
    '2': '-acodec aac -ac 2 -strict -2 -ab '
