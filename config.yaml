@@ -5,6 +5,8 @@
 mode: crf #Default mode: crf or 2pass
 scale: off #default scaling: off, 480p, 720p, 1080p, or uhd
 vcodec: hevc #default output video codec: avc, hevc, vp9
+acodec: aac  #Default ouptut audio codec: aac.   Opus to be supported in the future
+subtitle: ignore #default mode; ignore.   Or extract.
 ####### Paths #######
 
 logfile: 'c:\videoprocessing\videotranscoder.log'
@@ -100,52 +102,52 @@ SupportedInputSubtitles:
 #      Maximum, then the script will copy that stream instead of transcoding it.
 # Note: for Mediainfo, 1K = 1000
 
-# If a input vidoe codec is larger by this percentage, it will transcode the video
-TargetBitRateVariancePercent: 10
+#Variance keys are used in a video is slightly larger than target, it will still just copy and not transcode
+TargetBitRate:
+ vVariance: 1.10   #1.10 = 10%
+ avc:
+  480p: 699000
+  720p: 1500000
+  1080p: 2200000
+  UHD: 7000000
+ hevc:
+  480p: 300000
+  720p: 720000
+  1080p: 1300000
+  UHD: 3500000
+ vp9:
+  480p: 300000
+  720p: 720000
+  1080p: 1300000
+  UHD: 3500000
+ aVariance: 1.10   #1.10 = 10%
+ aac:
+  '2': 64000 #2 Channel
+  '6': 256000 #6 Channel
+ opus:
+  '2': 64000 #2 Channel
+  '6': 256000 #6 Channel
 
-AVCTargetBitRate:
- 480p: 699000
- 720p: 1500000
- 1080p: 2200000
- UHD: 7000000
-
-HEVCTargetBitRate:
- 480p: 300000
- 720p: 720000
- 1080p: 1300000
- UHD: 3500000
-
-VP9TargetBitRate:
- 480p: 300000
- 720p: 720000
- 1080p: 1300000
- UHD: 3500000
-
-AACTargetBitRate:
- 2ch: 64000
- 6ch: 256000
-
-#CRF - Higher = better quality
+#CRF - lower = better quality
 # AVC/HEVC CRF: http://slhck.info/video/2017/02/24/crf-guide.html
 # VP9 CRF: https://superuser.com/questions/1042194/settings-for-ffmpeg-for-best-vp9-quality-for-web-publishing#1042290
 
-AVCCRF:
- 480p: 26
- 720p: 24
- 1080p: 23
- UHD: 21
-
-HEVCCRF:
- 480p: 26
- 720p: 24
- 1080p: 23
- UHD: 21
-
-VP9CRF:
- 480p: 26
- 720p: 24
- 1080p: 23
- UHD: 21
+TargetCRF:
+ avc:
+  480p: 26
+  720p: 24
+  1080p: 23
+  UHD: 21
+ hevc:
+  480p: 26
+  720p: 24
+  1080p: 23
+  UHD: 21
+ vp9:
+  480p: 26
+  720p: 24
+  1080p: 23
+  UHD: 21
 
 ####### Encoder Settings #######
 #  This section is to setup the encoder settings.  Edit this area with care as it could easily break
@@ -173,19 +175,28 @@ VP9Encoder:
 
 #Note Target Bitrate/CRF is appended to this string, so -crf or -b:v must be the last parameter with a trailing space
 # VP9 is not implemented yet.
-FFMPEG:
-  AVC:
-   copy:'-vcodec copy'
-   pass1:'-vcodec libx264 -profile:v high -level 41 -preset fast -b:v '
-   pass2:'-vcodec libx264 -profile:v high -level 41 -preset slow -b:v '
-   crf:'-vcodec libx264 -profile:v high -level 41 -preset slow -crf '
-  HEVC:
-   copy:'-vcodec copy'
-   pass1:'-vcodec libx265 -preset fast -b:v '
-   pass2:'-vcodec libx265 -preset slow -b:v '
-   crf:'-vcodec libx265 -preset medium -x265-params crf '
-  AAC:
-   copy:'-acodec copy'
-   2ch:'-acodec aac -ac 2 -strict -2 -ab '
-   6ch:'-acodec aac -ac 6 -strict -2 -ab '
 
+FFMPEG:
+  avc:
+   copy: '-vcodec copy'
+   pass1: '-vcodec libx264 -profile:v high -level 41 -preset fast -b:v '
+   pass2: '-vcodec libx264 -profile:v high -level 41 -preset slow -b:v '
+   crf: '-vcodec libx264 -profile:v high -level 41 -preset slow -crf '
+  hevc:
+   copy: '-vcodec copy'
+   pass1: '-vcodec libx265 -preset fast -b:v '
+   pass2: '-vcodec libx265 -preset slow -b:v '
+   crf: '-vcodec libx265 -preset medium -x265-params crf '
+  vp9:  #incomplete
+   copy: '-vcodec copy'
+   pass1: '-vcodec libvpx-vp9 -quality good -b:v '
+   pass2: '-vcodec libvpx-vp9 -quality good -b:v '
+   crf: '-vcodec libvpx-vp9 -quality good -crf '
+  aac:
+   copy: '-acodec copy'
+   '2': '-acodec aac -ac 2 -strict -2 -ab '
+   '6': '-acodec aac -ac 6 -strict -2 -ab '
+  opus: #incomplete
+   copy: '-acodec copy'
+   '2': '-acodec libopus '#...
+   '6': '-acodec libopus '#...

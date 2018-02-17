@@ -5,12 +5,11 @@ debug = 1
 import yaml #Required to process yaml
 import argparse #required to process arguments
 import os #Required to be cross platform
-import time #Only required for debugging
 import sys #Required for sys.exit() calls
 import subprocess #REquired to launch programs like ffmpeg and ffprobe
 #from pymediainfo import MediaInfo https://pymediainfo.readthedocs.io/en/latest/
 #I didnt like it, so i'll write my own.
-import fnmatch #Required to match multiple files
+# import fnmatch #Required to match multiple files
 from datetime import datetime
 import logging # Required for log output
 import json # Required to get output from ffprobe
@@ -26,7 +25,7 @@ def videofoldercheck( str ):
    else:
        if os.path.isfile (str):
            output(("ERROR: path specified is a folder, not a file:",str),'info')
-           sys.exit("ERROR: path specified is a folder, not a file: ",str)
+           sys.exit(("ERROR: path specified is a folder, not a file: " + str))
        os.makedirs(str)
    return
 
@@ -39,9 +38,6 @@ def absolutepath( base, path ):
 
 def output ( message, msgloglevel) :
     sendmessage = 0
-    if msgloglevel not in ['debug','warning','info']:
-        msgloglevel = 'debug'
-
     if config['loglevel'] == 'debug': #If loglevel is debug, send all messages
         sendmessage = 1
     elif (config['loglevel'] == 'warning') and ((msgloglevel == 'warning') or (msgloglevel == 'info')): #if loglevel is warning send warning and info
@@ -57,13 +53,8 @@ def output ( message, msgloglevel) :
             logging.warning(message)
         elif msgloglevel == 'debug':
             logging.debug(message)
-    return;
+    return
 
-#def run_command(command):
-#    p = subprocess.Popen(command,
-#                         stdout=subprocess.PIPE,
-#                         stderr=subprocess.STDOUT)
-#    return iter(p.stdout.readline, b'')
 
 ## Configs
 with open('config.yaml') as f:
@@ -71,11 +62,26 @@ with open('config.yaml') as f:
     config = yaml.safe_load(f)
     #example print data['Person'].name
 
-    if config['loglevel'] not in ['debug','warning','info']:
-        output((' - loglevel value,', config['loglevel'], 'in config file invalid, setting to debug'),'debug')
-        config['loglevel'] = 'debug'
+logging.basicConfig(filename=config['logfile'], level=logging.DEBUG,
+                    format='%(asctime)s.%(msecs)03d %(levelname)s %(module)s - %(funcName)s: %(message)s',
+                    datefmt="%Y-%m-%d %H:%M:%S")
 
-logging.basicConfig(filename=config['logfile'],level=logging.DEBUG,format='%(asctime)s.%(msecs)03d %(levelname)s %(module)s - %(funcName)s: %(message)s', datefmt="%Y-%m-%d %H:%M:%S")
+### SEtting Defaults in case Yaml isnt correct
+if config['loglevel'] not in ['debug', 'warning', 'info']:
+    output((' - loglevel value,', config['loglevel'], 'in config file invalid, setting to debug'), 'debug')
+    config['loglevel'] = 'debug'
+
+if config['subtitle'] not in ['extract', 'ignore']:
+    output(('Subtitle value,', config['subtitle'], 'in config file invalid, setting to ignore'), 'debug')
+    config['subtitle'] = 'ignore'
+
+if config['vcodec'] not in ['avc', 'hevc', 'vp9']:
+    output(('vcodec value,', config['vcodec'], 'in config file invalid, setting to hevc'), 'debug')
+    config['vcodec'] = 'hevc'
+
+if config['acodec'] not in ['aac', 'opus']:
+    output(('acodec value,', config['acoded'], 'in config file invalid, setting to aac'), 'debug')
+    config['acodec'] = 'aac'
 
 output("after yaml load",'debug')
 output(config,'debug')
@@ -83,9 +89,9 @@ output(("config.mode", config['mode']),'debug')
 
 #Get Arguments
 parser = argparse.ArgumentParser(description='This is a video transcoding script')
-parser.add_argument('-m', '--mode', help='Processing mode', choices=set(['crf','2pass']) )
-parser.add_argument('-s', '--scale', help='Scaling', choices=set(['off','480p','720p','1080p','uhd']))
-parser.add_argument('-v', '--vcodec', help='Output video codec', choices=set(['AVC','HEVC','VP9']))
+parser.add_argument('-m', '--mode', help='Processing mode', choices=['crf', '2pass'])
+parser.add_argument('-s', '--scale', help='Scaling', choices=['off', '480p', '720p', '1080p', 'uhd'])
+parser.add_argument('-v', '--vcodec', help='Output video codec', choices=['AVC', 'HEVC', 'VP9'])
 parser.add_argument('-i', '--inputfolder', help='Input video folder')
 parser.add_argument('-o', '--outputfolder', help='Output video folder')
 args = parser.parse_args()
@@ -171,8 +177,8 @@ for root, dirnames, filenames in os.walk(config['input']):
             output(("matched filename: ",filename),debug)
             filematches.append(os.path.join(root, filename))
 
-output(("file Matches: ",filematches),'debug')
-output(("all Filenames:", filenames),'debug')
+output(("file Matches: ", filematches), 'debug')
+output(("all Filenames: ", filenames), 'debug')
 numfilenames = len(filenames)
 
 ############  Enter processor/encoder loop
@@ -221,17 +227,21 @@ for filename in filematches:
     output('Raw Data from Media Container',debug)
     output(mediainfo,debug)
     containerinfo = {'vCodec':'',  #Video Codec Type
-                 'vBitRate':0, #Video Bitrate -- note, sometimes ffprobe does not return a bitrate, then calculate
-                 'vWidth':0, #Video Resolution Width
-                 'vHeight':0, #Video Resolution Hight
-                 'aCodec':'', #Audio Codec -- Note, Script can only process 1 audio stream, if multiple, move to multi
-                 'aBitRate':0, #Audio Bitrate
-                 'aChannels':0, #Audio Channels
-                 'cTitle':'', #Container title -- Always reset to empty for ffmpeg to clear originally stored title
-                 'cDuration':0, #Container Duration
-                 'cBitRate':0, #container Bitrate
-                 'cSize':0 #Container Size
-                 }
+                     'vBitRate': 0,
+                     # Video Bitrate -- note, sometimes ffprobe does not return a bitrate, then calculate
+                     'vWidth': 0,  # Video Resolution Width
+                     'vHeight': 0,  # Video Resolution Hight
+                     'vResolution': '',  # Video resolution type
+                     'aCodec': '',
+                     # Audio Codec -- Note, Script can only process 1 audio stream, if multiple, move to multi
+                     'aBitRate': 0,  # Audio Bitrate
+                     'aChannels': 0,  # Audio Channels
+                     'cTitle': '',
+                     # Container title -- Always reset to empty for ffmpeg to clear originally stored title
+                     'cDuration': 0,  # Container Duration
+                     'cBitRate': 0,  # container Bitrate
+                     'cSize': 0  # Container Size
+                     }
 
     containerinfo['cBitRate'] = int(mediainfo['format']['bit_rate'])
     containerinfo['cDuration'] = float(mediainfo['format']['duration'])
@@ -243,7 +253,7 @@ for filename in filematches:
             numaudiostreams = numaudiostreams + 1
             output(('Number of Audio Streams :',numaudiostreams),debug)
             containerinfo['aCodec'] = stream['codec_name']
-            containerinfo['aChannels'] = int(stream['channels'])
+            containerinfo['aChannels'] = str(stream['channels'])
             containerinfo['aBitRate'] = int(stream['bit_rate'])
         if stream['codec_type'] == 'video':
             containerinfo['vCodec'] = stream['codec_name']
@@ -268,48 +278,136 @@ for filename in filematches:
     #End Info Gathering
 
     #Subtitle extractor
-    subtitlecount = -1  #First subtitle is 0
-    for stream in mediainfo['streams']:
-        if stream['codec_type'] == 'subtitle':
-            output('found Subtitle',debug)
-            subtitlecount = subtitlecount + 1
-            if stream['codec_name'] in config['SupportedInputSubtitles']:
-                output (('found supported codec: ',stream['codec_name']),debug)
-                output (('language is: ',stream['tags']['language']),debug)
-                #Launch FFMEPG to extract subtitle
-                if 'language' in stream['tags']:
-                    lang = stream['tags']['language']
-                else:
-                    lang = ''
+    if [config['subtitle']] == 'extract':
+        subtitlecount = -1  # First subtitle is 0
+        for stream in mediainfo['streams']:
+            if stream['codec_type'] == 'subtitle':
+                output('found Subtitle', debug)
+                subtitlecount = subtitlecount + 1
+                if stream['codec_name'] in config['SupportedInputSubtitles']:
+                    output(('found supported codec: ', stream['codec_name']), debug)
+                    output(('language is: ', stream['tags']['language']), debug)
+                    # Launch FFMEPG to extract subtitle
+                    if 'language' in stream['tags']:
+                        lang = stream['tags']['language']
+                    else:
+                        lang = ''
 
-                if 'title' in stream['tags']:
-                    subtitle = stream['tags']['title']
-                else:
-                    subtitle = ''
-                output(('testingoutputfolder', config['output']), debug)
-                output(('basefilename ',basefilename),debug)
-                subtitlefile = os.path.join(config['output'],(os.path.basename(filename)+'-'+lang+'-'+subtitle+'-'+str(subtitlecount)+'.srt'))
-                output (('output subtitle name is: ',subtitlefile),debug)
-                subtitlemap = "0:s:"+str(subtitlecount)
-                command = [config['tool']['ffmpeg'],
+                    if 'title' in stream['tags']:
+                        subtitle = stream['tags']['title']
+                    else:
+                        subtitle = ''
+                    output(('testingoutputfolder', config['output']), debug)
+                    output(('basefilename ', basefilename), debug)
+                    subtitlefile = os.path.join(config['output'], (
+                            os.path.basename(filename) + '-' + lang + '-' + subtitle + '-' + str(
+                        subtitlecount) + '.srt'))
+                    output(('output subtitle name is: ', subtitlefile), debug)
+                    subtitlemap = "0:s:" + str(subtitlecount)
+                    command = [config['tool']['ffmpeg'],
                            "-i", filename,
                            "-map", subtitlemap,
-                           "-y",
-                            subtitlefile
-                           ]
-                output (('extract command: ',command),debug)
-                cmd = config['tool']['ffmpeg']+" -i "+filename+" -map "+subtitlemap+" -y "+ subtitlefile
-                process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
-                for line in process.stdout:
-                    output(line,'info')
+                               "-y",
+                               subtitlefile
+                               ]
+                    output(('extract command: ', command), debug)
+                    cmd = config['tool']['ffmpeg'] + " -i " + filename + " -map " + subtitlemap + " -y " + subtitlefile
+                    process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                                               universal_newlines=True)
+                    for line in process.stdout:
+                        output(line, 'info')
     #END Subtitle Extractor
 
-    #Does video need scale
+    # Does video need scale
+    # detect scale switch/config and implement the switch, but I need the transcoding code before I know how to implement the switch
+    # BUILD Encoder string
+    encoderbasecmd = config['tool']['ffmpeg']
+    encodervideocmd = ''
+    encodervideo2cmd = ''  # only used for 2pass
+    encoderaudiocmd = ''
+    encoderscalecmd = ''
 
-    #Does video codec match and have good bitrate
+    ##Video Review
+    # Frequently movies are clipped vertically, so it's more accurate to do hoizontal checks vs vertical
+    # DVD = 720x480 or 720x576
+    # 720p = 1280x720
+    # 1080p = 1920x1080
+    # 4k = 3840x2160
+    # 8k = 7680x4320
 
-    # Does video codec match and have good bitrate
-    #Determine transcode type here
+    # vCodec Check
+    # Check resolution
+    if containerinfo['vWidth'] < 721:  # DVD
+        output(("less than 720p: ", containerinfo['vHeight']), 'debug')
+        containerinfo['vResolution'] = '480p'
+    elif containerinfo['vWidth'] >= 721 and containerinfo['vWidth'] < 1600:  # 720p
+        output(("720p video: ", containerinfo['vHeight']), 'debug')
+        containerinfo['vResolution'] = '720p'
+    elif containerinfo['vWidth'] >= 1600 and containerinfo['vWidth'] < 2880:  # 1080p
+        output(("1080p video: ", containerinfo['vHeight']), 'debug')
+        containerinfo['vResolution'] = '1080p'
+    elif containerinfo['vWidth'] >= 2880 and containerinfo['vWidth'] < 5760:  # 4K
+        output(("4K Video: ", containerinfo['vHeight']), 'debug')
+        containerinfo['vResolution'] = 'UHD'
+    elif containerinfo['vWidth'] >= 5760 and containerinfo['vWidth'] < 8000:  # 8k
+        output(("8K Video: ", containerinfo['vHeight']), 'debug')
+        containerinfo['vResolution'] = '8kUHD'
+    else:
+        output(("container resolution ", containerinfo['vHeight'], " is confusing me, moving to unknown and moving on"),
+               'info')
+        videofoldercheck(config['unknown'])
+        shutil.move(filename, os.path.join(config['unknown'], os.path.basename(filename)))
+
+    # Video Encoder engine
+    for codec in ['hevc', 'avc', 'vp9']:
+        print("testing " + codec)
+        if config['vcodec'] == codec:
+            for resolution in ['480p', '720p', '1080p', 'UHD', '8kUHD']:
+                print("testing " + resolution)
+                if (containerinfo['vResolution'] == resolution) and (
+                        containerinfo['vBitRate'] > (config['TargetBitRate'][codec][resolution]) *
+                        config['TargetBitRate']['vVariance']):
+                    print(resolution + " transcode")
+                    if config['mode'] == 'crf':
+                        encodervideocmd = (config['FFMPEG'][codec]['crf'] + str(config['TargetCRF'][codec][resolution]))
+                    elif config['mode'] == '2pass':
+                        encodervideocmd = (
+                                config['FFMPEG'][codec]['pass1'] + str(config['TargetBitRate'][codec][resolution]))
+                        encodervideo2cmd = (
+                                config['FFMPEG'][codec]['pass2'] + str(config['TargetBitRate'][codec][resolution]))
+                    break
+                elif (containerinfo['vResolution'] == resolution) and (
+                        containerinfo['vBitRate'] <= (config['TargetBitRate'][codec][resolution]) *
+                        config['TargetBitRate']['vVariance']):
+                    print(resolution + " copy")
+                    encodervideocmd = config['FFMPEG'][codec]['copy']
+                    break
+
+    # aCodec Check
+    # Check resolution
+    if containerinfo['aChannels'] not in ['2', '6']:
+        output("input audio not 2 or 6 channels", 'debug')
+        videofoldercheck(config['unknown'])
+        shutil.move(filename, os.path.join(config['unknown'], os.path.basename(filename)))
+
+    # Audio Encoder engine
+    for codec in ['aac', 'opus']:
+        print("testing " + codec)
+        if config['acodec'] == codec:
+            for channels in ['2', '6']:
+                if (containerinfo['aChannels'] == channels) and (containerinfo['aBitRate'] > (
+                        config['TargetBitRate'][codec][channels] * config['TargetBitRate']['aVariance'])):
+                    encoderaudiocmd = (
+                            config['FFMPEG'][codec][channels] + str(config['TargetBitRate'][codec][channels]))
+                    break
+                elif (containerinfo['aChannels'] == channels) and (
+                        containerinfo['aBitRate'] <= config['TargetBitRate'][codec][channels] * config['TargetBitRate'][
+                    'aVariance']):
+                    encoderaudiocmd = config['FFMPEG'][codec]['copy']
+                    break
+
+    output(("Encoder Video Switches :") + encodervideocmd, 'debug')
+    output(("Encoder Audio Switches :") + encoderaudiocmd, 'debug')
 
     #Transcode here
 
