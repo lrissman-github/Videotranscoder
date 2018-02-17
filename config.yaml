@@ -26,8 +26,7 @@ tool:
  ffprobe: 'tools\ffmpeg\ffprobe.exe'
 #Linux
  #- ffmpeg: '/usr/bin/ffmpeg'
- #- mkvextract: '/usr/bin/mkvextract'
- #- mkvmerge: '/usr/bin/mkvmerge.exe'
+ #- ffprobe: '/usr/bin/ffprobe'
 
 ####### Containers/Files #######
 #These are container types that will be allowed, all others will be moved to 'unknown folder'
@@ -200,3 +199,9 @@ FFMPEG:
    copy: '-acodec copy'
    '2': '-acodec libopus '#...
    '6': '-acodec libopus '#...
+  scale: #scale code
+   480p: '-vf scale=720:-2'
+   720p: '-vf scale=1280:-2'
+   1080p: '-vf scale=1920:-2'
+   uhd: '-vf scale=3840:-2'
+   8kuhd: '-vf scale=7680:-2'

@@ -71,18 +71,6 @@ if config['loglevel'] not in ['debug', 'warning', 'info']:
     output((' - loglevel value,', config['loglevel'], 'in config file invalid, setting to debug'), 'debug')
     config['loglevel'] = 'debug'
 
-if config['subtitle'] not in ['extract', 'ignore']:
-    output(('Subtitle value,', config['subtitle'], 'in config file invalid, setting to ignore'), 'debug')
-    config['subtitle'] = 'ignore'
-
-if config['vcodec'] not in ['avc', 'hevc', 'vp9']:
-    output(('vcodec value,', config['vcodec'], 'in config file invalid, setting to hevc'), 'debug')
-    config['vcodec'] = 'hevc'
-
-if config['acodec'] not in ['aac', 'opus']:
-    output(('acodec value,', config['acoded'], 'in config file invalid, setting to aac'), 'debug')
-    config['acodec'] = 'aac'
-
 output("after yaml load",'debug')
 output(config,'debug')
 output(("config.mode", config['mode']),'debug')
@@ -119,6 +107,23 @@ if args.outputfolder:
         config['output']=args.outputfolder
     else:
         output(("folder does not exist, using path in config file"),'info')
+
+# Validate configuration
+if config['subtitle'] not in ['extract', 'ignore']:
+    output(('Subtitle value,', config['subtitle'], 'in config file invalid, setting to ignore'), 'debug')
+    config['subtitle'] = 'ignore'
+
+if config['vcodec'] not in ['avc', 'hevc', 'vp9']:
+    output(('vcodec value,', config['vcodec'], 'in config file invalid, setting to hevc'), 'debug')
+    config['vcodec'] = 'hevc'
+
+if config['acodec'] not in ['aac', 'opus']:
+    output(('acodec value,', config['acoded'], 'in config file invalid, setting to aac'), 'debug')
+    config['acodec'] = 'aac'
+
+if config['scale'] not in ['none', '480p', '720p', '1080p', 'uhd']:
+    output(('scale value,', config['scale'], 'in config file invalid, setting scale to none'), 'debug')
+    config['scale'] = 'none'
 
 output(("final config after arguments",config),'debug')
 
@@ -343,15 +348,23 @@ for filename in filematches:
     elif containerinfo['vWidth'] >= 721 and containerinfo['vWidth'] < 1600:  # 720p
         output(("720p video: ", containerinfo['vHeight']), 'debug')
         containerinfo['vResolution'] = '720p'
+        if config['scale'] in ['480p']:
+            encoderscalecmd = config['FFMPEG']['scale'][config['scale']]
     elif containerinfo['vWidth'] >= 1600 and containerinfo['vWidth'] < 2880:  # 1080p
         output(("1080p video: ", containerinfo['vHeight']), 'debug')
         containerinfo['vResolution'] = '1080p'
+        if config['scale'] in ['480p', '720p']:
+            encoderscalecmd = config['FFMPEG']['scale'][config['scale']]
     elif containerinfo['vWidth'] >= 2880 and containerinfo['vWidth'] < 5760:  # 4K
         output(("4K Video: ", containerinfo['vHeight']), 'debug')
         containerinfo['vResolution'] = 'UHD'
+        if config['scale'] in ['480p', '720p', '1080p']:
+            encoderscalecmd = config['FFMPEG']['scale'][config['scale']]
     elif containerinfo['vWidth'] >= 5760 and containerinfo['vWidth'] < 8000:  # 8k
         output(("8K Video: ", containerinfo['vHeight']), 'debug')
         containerinfo['vResolution'] = '8kUHD'
+        if config['scale'] in ['480p', '720p', '1080p', 'uhd']:
+            encoderscalecmd = config['FFMPEG']['scale'][config['scale']]
     else:
         output(("container resolution ", containerinfo['vHeight'], " is confusing me, moving to unknown and moving on"),
                'info')
@@ -408,7 +421,7 @@ for filename in filematches:
 
     output(("Encoder Video Switches :") + encodervideocmd, 'debug')
     output(("Encoder Audio Switches :") + encoderaudiocmd, 'debug')
-
+    output(("Encoder Scale switches :") + encoderscalecmd, 'debug')
     #Transcode here
 
     #Move transcode results here
