@@ -270,7 +270,8 @@ for filename in filematches:
             containerinfo['aCodec'] = stream['codec_name']
             containerinfo['aChannels'] = str(stream['channels'])
             if 'bit_rate' not in stream:
-                output("No Bitrate found in ffprobe output", debug)
+                output("No Bitrate found in ffprobe output, setting to 999999", debug)
+                containerinfo['aBitRate'] = 999999
             else:
                 containerinfo['aBitRate'] = int(stream['bit_rate'])
         if stream['codec_type'] == 'video':
@@ -438,8 +439,8 @@ for filename in filematches:
     print(temp_name)
     # Build FFMPEG command
     if config['mode'] == 'crf':
-        ffmpegcmd = encoderbasecmd + " -i \"" + filename + "\" " + encodervideocmd + encoderscalecmd + " " + encoderaudiocmd + " " + os.path.join(
-            config['input'], temp_name)
+        ffmpegcmd = encoderbasecmd + " -i \"" + filename + "\" " + encodervideocmd + encoderscalecmd + " " + encoderaudiocmd + " \"" + os.path.join(
+            config['input'], temp_name) + "\""
 
     output(("Encoder Video Switches :") + encodervideocmd, 'debug')
     output(("Encoder Audio Switches :") + encoderaudiocmd, 'debug')
