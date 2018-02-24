@@ -6,7 +6,6 @@ mode: crf #Default mode: crf or 2pass
 scale: off #default scaling: off, 480p, 720p, 1080p, or uhd
 vcodec: hevc #default output video codec: avc, hevc, vp9
 acodec: aac  #Default ouptut audio codec: aac.   Opus to be supported in the future
-subtitle: ignore #default mode; ignore.   Or extract.
 ####### Paths #######
 
 logfile: 'c:\videoprocessing\videotranscoder.log'
@@ -15,9 +14,21 @@ loglevel: 'debug'  #info, warning, or debug
 base: 'C:\Users\lriss\PycharmProjects\Videotranscoder'     #location of this script
 input: 'c:\videoprocessing\input'
 output: 'c:\videoprocessing\output'
+origoutput: 'c:\videoprocessing\oiginal' #Where to move original video
 unknown: 'c:\videoprocessing\unknown'
 bad: 'c:\videoprocessing\bad'
 multiaudio: 'c:\videoprocessing\multi'
+
+#Switches
+subtitle: ignore #default mode; ignore.   Or extract.
+
+#NOT YET IMPLEMENTED
+renameorig: no  #add .original to original video names after processing (yes/no)
+moveothers: #Dynamic list of other file exensions to move.  Add and remove to this list as needed and program will
+ - .srt     #  move files that start with the same as the input file and have the moveothers as file extension.
+# - .nfo    #  NOTE:  It will rename duplicate subtitles sequentially <name>-orig[1,2,3,4].srt
+# - .jpg
+# END NOT YET IMPLEMENTED
 
 #Tools
 #Windows

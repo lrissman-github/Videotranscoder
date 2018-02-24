@@ -126,6 +126,11 @@ if config['scale'] not in ['none', '480p', '720p', '1080p', 'uhd']:
     output(('scale value,', config['scale'], 'in config file invalid, setting scale to none'), 'debug')
     config['scale'] = 'none'
 
+if config['renameorig'] not in ['yes', 'no']:
+    output(('reanmeorig setting:, ', config['renameorig'], 'in config file invalid, setting renameorig to default yes'),
+           'debug')
+    config['renameorig'] = 'yes'
+
 # output(("final config after arguments",config),'debug')
 
 
@@ -133,6 +138,7 @@ if config['scale'] not in ['none', '480p', '720p', '1080p', 'uhd']:
 print ("Base: ",config['base'])
 config['input'] = absolutepath( config['base'], config['input'] )
 config['output'] = absolutepath( config['base'], config['output'] )
+config['origoutput'] = absolutepath(config['base'], config['origoutput'])
 config['unknown'] = absolutepath( config['base'], config['unknown'] )
 config['bad'] = absolutepath( config['base'], config['bad'] )
 config['multiaudio'] = absolutepath( config['base'], config['multiaudio'] )
@@ -153,6 +159,7 @@ output('All questions, information and bugreports are handled via GitHub','info'
 #Initial Verify processing directories exist, if not create them
 videofoldercheck(config['input'])
 videofoldercheck(config['output'])
+videofoldercheck(config['origoutput'])
 videofoldercheck(config['unknown'])
 videofoldercheck(config['bad'])
 videofoldercheck(config['multiaudio'])
@@ -210,7 +217,7 @@ for filename in filematches:
     output(("Will process this file: ",filename),'info')
     # Create lock file
     lockfile = filename + ".lock"
-    open(x, lockfile).close()
+    open(lockfile, 'a').close()
 
     # Get Media Info
     command = [config['tool']['ffprobe'],
@@ -262,7 +269,10 @@ for filename in filematches:
             output(('Number of Audio Streams :',numaudiostreams),debug)
             containerinfo['aCodec'] = stream['codec_name']
             containerinfo['aChannels'] = str(stream['channels'])
-            containerinfo['aBitRate'] = int(stream['bit_rate'])
+            if 'bit_rate' not in stream:
+                output("No Bitrate found in ffprobe output", debug)
+            else:
+                containerinfo['aBitRate'] = int(stream['bit_rate'])
         if stream['codec_type'] == 'video':
             containerinfo['vCodec'] = stream['codec_name']
             containerinfo['vHeight'] = int(stream['height'])
@@ -444,9 +454,9 @@ for filename in filematches:
     videofoldercheck(config['output'])
     shutil.move(os.path.join(config['input'], temp_name),
                 os.path.join(config['output'], os.path.basename(filename)))  # Move temp file to new file name
-    videofoldercheck(config['output'])
+    videofoldercheck(config['origoutput'])
     shutil.move(filename,
-                os.path.join(config['output'], (os.path.basename(
+                os.path.join(config['origoutput'], (os.path.basename(
                     filename) + ".original")))  # Move original file with ".original" on the end
     # Delete lock file
     os.remove(lockfile)
