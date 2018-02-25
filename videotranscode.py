@@ -293,6 +293,7 @@ for filename in filematches:
         output(('More than one Audio track Found:', numaudiostreams),debug )
         videofoldercheck(config['multiaudio'])
         shutil.move(filename, os.path.join(config['multiaudio'],os.path.basename(filename)))
+        os.remove(lockfile)
         continue
         # Move to "multi folder"
     #End Info Gathering
@@ -437,7 +438,7 @@ for filename in filematches:
     # create tempfile name for encoding
     temp_name = next(tempfile._get_candidate_names())
     temp_name = os.path.basename(filename) + "." + temp_name + ".mp4"
-    print(temp_name)
+
     # SPlit commands into lists of strings
     encodervideocmd = shlex.split(encodervideocmd)
     encoderaudiocmd = shlex.split(encoderaudiocmd)
