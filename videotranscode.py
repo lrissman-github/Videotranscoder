@@ -15,6 +15,7 @@ import logging # Required for log output
 import json # Required to get output from ffprobe
 import shutil # Required for moving files
 import tempfile  # Required for temp file name
+import shlex  # Required for command splitting into lists of strings
 
 version = '0.2 beta'
 ### Functions
@@ -330,7 +331,7 @@ for filename in filematches:
                                subtitlefile
                                ]
                     output(('extract command: ', command), debug)
-                    cmd = config['tool']['ffmpeg'] + " -i " + filename + " -map " + subtitlemap + " -y " + subtitlefile
+                    #cmd = config['tool']['ffmpeg'] + " -i " + filename + " -map " + subtitlemap + " -y " + subtitlefile
                     process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                                universal_newlines=True)
                     for line in process.stdout:
@@ -437,21 +438,29 @@ for filename in filematches:
     temp_name = next(tempfile._get_candidate_names())
     temp_name = os.path.basename(filename) + "." + temp_name + ".mp4"
     print(temp_name)
+    # SPlit commands into lists of strings
+    encodervideocmd = shlex.split(encodervideocmd)
+    encoderaudiocmd = shlex.split(encoderaudiocmd)
+    encoderscalecmd = shlex.split(encoderscalecmd)
+
     # Build FFMPEG command
     if config['mode'] == 'crf':
-        ffmpegcmd = encoderbasecmd + " -i \"" + filename + "\" " + encodervideocmd + encoderscalecmd + " " + encoderaudiocmd + " \"" + os.path.join(
-            config['input'], temp_name) + "\""
+        ffmpegcmd = [encoderbasecmd,
+                     "-i", os.path.abspath(filename)]
+        ffmpegcmd = ffmpegcmd + encodervideocmd + encoderscalecmd + encoderaudiocmd
+        ffmpegcmd.append(os.path.join(config['input'], temp_name))
+    output(("Encoder Video Switches :", encodervideocmd), 'debug')
+    output(("Encoder Audio Switches :", encoderaudiocmd), 'debug')
+    output(("Encoder Scale switches :", encoderscalecmd), 'debug')
+    output(("Completed combined: ", ffmpegcmd), 'debug')
 
-    output(("Encoder Video Switches :") + encodervideocmd, 'debug')
-    output(("Encoder Audio Switches :") + encoderaudiocmd, 'debug')
-    output(("Encoder Scale switches :") + encoderscalecmd, 'debug')
-    output(("Completed combined: ") + ffmpegcmd, 'debug')
     #Transcode here
     process = subprocess.Popen(ffmpegcmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                universal_newlines=True)
     for line in process.stdout:
         output(line, 'info')
     #Move transcode results here
+
     videofoldercheck(config['output'])
     shutil.move(os.path.join(config['input'], temp_name),
                 os.path.join(config['output'], os.path.basename(filename)))  # Move temp file to new file name
