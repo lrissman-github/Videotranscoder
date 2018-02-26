@@ -190,7 +190,6 @@ for root, dirnames, filenames in os.walk(config['input']):
         if filename.lower().endswith(tuple(config['SupportedInputContainers'])):
             output(("matched filename: ",filename),debug)
             filematches.append(os.path.join(root, filename))
-numfilenames = len(filenames)
 
 try:
     filenames
@@ -201,6 +200,7 @@ except NameError:
 output(("file Matches: ", filematches), 'debug')
 output(("all Filenames: ", filenames), 'debug')
 
+numfilenames = len(filenames)
 
 ############  Enter processor/encoder loop
 
