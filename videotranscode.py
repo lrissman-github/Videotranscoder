@@ -425,6 +425,7 @@ for filename in filematches:
         output("input audio not 2 or 6 channels", 'debug')
         videofoldercheck(config['unknown'])
         shutil.move(filename, os.path.join(config['unknown'], os.path.basename(filename))
+        os.remove(lockfile)
         continue
 
     # Audio Encoder engine
