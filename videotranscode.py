@@ -424,7 +424,8 @@ for filename in filematches:
     if containerinfo['aChannels'] not in ['2', '6']:
         output("input audio not 2 or 6 channels", 'debug')
         videofoldercheck(config['unknown'])
-        shutil.move(filename, os.path.join(config['unknown'], os.path.basename(filename)))
+        shutil.move(filename, os.path.join(config['unknown'], os.path.basename(filename))
+        continue
 
     # Audio Encoder engine
     for codec in ['aac', 'opus']:
