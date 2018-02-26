@@ -134,6 +134,7 @@ TargetBitRate:
  aac:
   '2': 64000 #2 Channel
   '6': 256000 #6 Channel
+  '8': 343000 #8 Channel
  opus:
   '2': 64000 #2 Channel
   '6': 256000 #6 Channel
@@ -206,6 +207,7 @@ FFMPEG:
    copy: '-acodec copy'
    '2': '-acodec aac -ac 2 -strict -2 -ab '
    '6': '-acodec aac -ac 6 -strict -2 -ab '
+   '8': '-acodec aac -ac 8 -strict -2 -ab '
   opus: #incomplete
    copy: '-acodec copy'
    '2': '-acodec libopus '#...

@@ -421,7 +421,7 @@ for filename in filematches:
 
     # aCodec Check
     # Check resolution
-    if containerinfo['aChannels'] not in ['2', '6']:
+    if containerinfo['aChannels'] not in ['2', '6', '8']:
         output("input audio not 2 or 6 channels", 'debug')
         videofoldercheck(config['unknown'])
         shutil.move(filename, os.path.join(config['unknown'], os.path.basename(filename))
@@ -431,7 +431,7 @@ for filename in filematches:
     for codec in ['aac', 'opus']:
         print("testing " + codec)
         if config['acodec'] == codec:
-            for channels in ['2', '6']:
+            for channels in ['2', '6', '8']:
                 if (containerinfo['aChannels'] == channels) and (containerinfo['aBitRate'] > (
                         config['TargetBitRate'][codec][channels] * config['TargetBitRate']['aVariance'])):
                     encoderaudiocmd = (
