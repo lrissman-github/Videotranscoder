@@ -17,7 +17,7 @@ import shutil # Required for moving files
 import tempfile  # Required for temp file name
 import shlex  # Required for command splitting into lists of strings
 
-version = '0.2 beta'
+version = '0.2.1 beta'
 ### Functions
 
 def videofoldercheck( str ):
@@ -405,12 +405,16 @@ for filename in filematches:
                         config['TargetBitRate']['vVariance']) or config['scale'] != 'none'):
                     print(resolution + " transcode")
                     if config['mode'] == 'crf':
-                        encodervideocmd = (config['FFMPEG'][codec]['crf'] + str(config['TargetCRF'][codec][resolution]))
+                        encodervideocmd = (
+                                    config['FFMPEG'][codec]['crf'] + str(config['TargetCRF'][codec][resolution]) +
+                                    config['FFMPEG']['maxbitrate'] + str(config['MaximumBitrate'][codec][resolution]))
                     elif config['mode'] == '2pass':
                         encodervideocmd = (
-                                config['FFMPEG'][codec]['pass1'] + str(config['TargetBitRate'][codec][resolution]))
+                                config['FFMPEG'][codec]['pass1'] + str(config['TargetBitRate'][codec][resolution]) +
+                                config['FFMPEG']['maxbitrate'] + str(config['MaximumBitrate'][codec][resolution]))
                         encodervideo2cmd = (
-                                config['FFMPEG'][codec]['pass2'] + str(config['TargetBitRate'][codec][resolution]))
+                                config['FFMPEG'][codec]['pass2'] + str(config['TargetBitRate'][codec][resolution]) +
+                                config['FFMPEG']['maxbitrate'] + str(config['MaximumBitrate'][codec][resolution]))
                     break
                 elif (containerinfo['vResolution'] == resolution) and (
                         containerinfo['vBitRate'] <= (config['TargetBitRate'][codec][resolution]) *

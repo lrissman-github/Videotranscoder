@@ -204,9 +204,11 @@ VP9Encoder:
 #Encoder parameters
 
 #Note Target Bitrate/CRF is appended to this string, so -crf or -b:v must be the last parameter with a trailing space
+#Note 2, Maximum bitrate is further appended and also must have a trailing whitespace
 # VP9 is not implemented yet.
 
 FFMPEG:
+  maxbitrate: '-maxrate '
   avc:
    copy: '-map_metadata -1 -vcodec copy'
    pass1: '-map_metadata -1 -vcodec libx264 -profile:v high -level 41 -preset fast -b:v '
@@ -216,7 +218,7 @@ FFMPEG:
    copy: '-map_metadata -1 -vcodec copy'
    pass1: '-map_metadata -1 -vcodec libx265 -preset fast -b:v '
    pass2: '-map_metadata -1 -vcodec libx265 -preset slow -b:v '
-   crf: '-map_metadata -1 -vcodec libx265 -preset medium -x265-params crf='
+   crf: '-map_metadata -1 -vcodec libx265 -preset fast -x265-params crf='
   vp9:  #incomplete
    copy: '-map_metadata -1 -vcodec copy'
    pass1: '-map_metadata -1 -vcodec libvpx-vp9 -quality good -b:v '
