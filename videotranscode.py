@@ -194,7 +194,7 @@ for root, dirnames, filenames in os.walk(config['input']):
 try:
     filenames
 except NameError:
-    output("No files found in the input diectory, exiting.", 'info')
+    output("No files found in the input directory, exiting.", 'info')
     sys.exit()
 
 output(("file Matches: ", filematches), 'debug')
@@ -217,14 +217,15 @@ for filename in filematches:
         #Making sure that file was not removed
         output(("File no longer in source folder"),'info')
     basefilename, extension = os.path.splitext(filename)
-    lockfile = absolutepath(config['input'], (basefilename + ".LOCK"))
+    lockfile = filename + ".lock"
+    output(("Lockfile name is: ", lockfile), 'debug')
     if os.path.isfile(lockfile):
         output(("Found a lockfile, skipping media file:", lockfile),'info')
         continue
-
+    quit()
     output(("Will process this file: ",filename),'info')
     # Create lock file
-    lockfile = filename + ".lock"
+
     open(lockfile, 'a').close()
 
     # Get Media Info
@@ -406,14 +407,16 @@ for filename in filematches:
                     print(resolution + " transcode")
                     if config['mode'] == 'crf':
                         encodervideocmd = (
-                                    config['FFMPEG'][codec]['crf'] + str(config['TargetCRF'][codec][resolution]) +
-                                    config['FFMPEG']['maxbitrate'] + str(config['MaximumBitrate'][codec][resolution]))
+                                config['FFMPEG'][codec]['crf'] + str(config['TargetCRF'][codec][resolution]) + ' ' +
+                                config['FFMPEG']['maxbitrate'] + str(config['MaximumBitrate'][codec][resolution]))
                     elif config['mode'] == '2pass':
                         encodervideocmd = (
-                                config['FFMPEG'][codec]['pass1'] + str(config['TargetBitRate'][codec][resolution]) +
+                                config['FFMPEG'][codec]['pass1'] + str(
+                            config['TargetBitRate'][codec][resolution]) + ' ' +
                                 config['FFMPEG']['maxbitrate'] + str(config['MaximumBitrate'][codec][resolution]))
                         encodervideo2cmd = (
-                                config['FFMPEG'][codec]['pass2'] + str(config['TargetBitRate'][codec][resolution]) +
+                                config['FFMPEG'][codec]['pass2'] + str(
+                            config['TargetBitRate'][codec][resolution]) + ' ' +
                                 config['FFMPEG']['maxbitrate'] + str(config['MaximumBitrate'][codec][resolution]))
                     break
                 elif (containerinfo['vResolution'] == resolution) and (

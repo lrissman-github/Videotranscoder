@@ -8,16 +8,41 @@ vcodec: hevc #default output video codec: avc, hevc, vp9
 acodec: aac  #Default ouptut audio codec: aac.   Opus to be supported in the future
 ####### Paths #######
 
-logfile: 'c:\videoprocessing\videotranscoder.log'
+logfile: '/home/lrissman/sdcard/totranscode/videotranscoder.log'
 loglevel: 'debug'  #info, warning, or debug
+
+#Only have either windows or linux configs uncommeted -- both are here for simplicity in editing this file.
+
+#Windows configs to start with
+
 #Working Directories
-base: 'C:\Users\lriss\PycharmProjects\Videotranscoder'     #location of this script
-input: 'c:\videoprocessing\input'
-output: 'c:\videoprocessing\output'
-origoutput: 'c:\videoprocessing\oiginal' #Where to move original video
-unknown: 'c:\videoprocessing\unknown'
-bad: 'c:\videoprocessing\bad'
-multiaudio: 'c:\videoprocessing\multi'
+#base: 'C:\Users\lriss\PycharmProjects\Videotranscoder'     #location of this script
+#input: 'c:\videoprocessing\input'
+#output: 'c:\videoprocessing\output'
+#origoutput: 'c:\videoprocessing\original' #Where to move original video
+#unknown: 'c:\videoprocessing\unknown'
+#bad: 'c:\videoprocessing\bad'
+#multiaudio: 'c:\videoprocessing\multi'
+
+#Tools
+#tool:
+# ffmpeg: 'tools\ffmpeg\ffmpeg.exe'
+# ffprobe: 'tools\ffmpeg\ffprobe.exe'
+
+#Linux configs to start with
+tool:
+  ffmpeg: '/usr/bin/ffmpeg'
+  ffprobe: '/usr/bin/ffprobe'
+
+#Working Directories
+base: '/home/lrissman/PycharmProjects/Videotranscoder'     #location of this script
+input: '/home/lrissman/sdcard/totranscode/1'
+output: '/home/lrissman/sdcard/totranscode/2'
+origoutput: '/home/lrissman/sdcard/totranscode/orignal' #Where to move original video
+unknown: '/home/lrissman/sdcard/totranscode/unknown'
+bad: '/home/lrissman/sdcard/totranscode/bad'
+multiaudio: '/home/lrissman/sdcard/totranscode/multi'
+
 
 #Switches
 subtitle: ignore #default mode; ignore.   Or extract.
@@ -29,15 +54,6 @@ moveothers: #Dynamic list of other file exensions to move.  Add and remove to th
 # - .nfo    #  NOTE:  It will rename duplicate subtitles sequentially <name>-orig[1,2,3,4].srt
 # - .jpg
 # END NOT YET IMPLEMENTED
-
-#Tools
-#Windows
-tool:
- ffmpeg: 'tools\ffmpeg\ffmpeg.exe'
- ffprobe: 'tools\ffmpeg\ffprobe.exe'
-#Linux
- #- ffmpeg: '/usr/bin/ffmpeg'
- #- ffprobe: '/usr/bin/ffprobe'
 
 ####### Containers/Files #######
 #These are container types that will be allowed, all others will be moved to 'unknown folder'
