@@ -160,6 +160,25 @@ TargetCRF:
   1080p: 23
   UHD: 21
 
+#Maxiumum Bitrate
+#  Maximum bitrate is applied to both CRF and target bitrate modes -- set to approximately 30% more than target
+MaximumBitrate:
+ avc:
+  480p: 908000
+  720p: 1545000
+  1080p: 2266000
+  UHD: 7000000
+ hevc:
+  480p: 309000
+  720p: 741600
+  1080p: 1339000
+  UHD: 3500000
+ vp9:
+  480p: 309000
+  720p: 741600
+  1080p: 1339000
+  UHD: 3500000
+
 ####### Encoder Settings #######
 #  This section is to setup the encoder settings.  Edit this area with care as it could easily break
 # Note: AT this time, only FFMPEG is supported.  Future versions are intended to include support for hardware encoders
