@@ -222,7 +222,7 @@ for filename in filematches:
     if os.path.isfile(lockfile):
         output(("Found a lockfile, skipping media file:", lockfile),'info')
         continue
-    quit()
+
     output(("Will process this file: ",filename),'info')
     # Create lock file
 
