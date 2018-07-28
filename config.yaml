@@ -6,6 +6,7 @@ mode: crf #Default mode: crf or 2pass
 scale: off #default scaling: off, 480p, 720p, 1080p, or uhd
 vcodec: hevc #default output video codec: avc, hevc, vp9
 acodec: aac  #Default ouptut audio codec: aac.   Opus to be supported in the future
+removeextras: on #Remove movie folders and other files in folders.
 ####### Paths #######
 
 logfile: '/home/lrissman/sdcard/totranscode/videotranscoder.log'
