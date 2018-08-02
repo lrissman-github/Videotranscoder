@@ -408,7 +408,9 @@ for filename in filematches:
                     if config['mode'] == 'crf':
                         encodervideocmd = (
                                 config['FFMPEG'][codec]['crf'] + str(config['TargetCRF'][codec][resolution]) + ' ' +
-                                config['FFMPEG']['maxbitrate'] + str(config['MaximumBitrate'][codec][resolution]))
+                                config['FFMPEG']['maxbitrate'] + str(
+                            config['MaximumBitrate'][codec][resolution]) + ' -bufsize ' + str(
+                            config['MaximumBitrate'][codec][resolution]))
                     elif config['mode'] == '2pass':
                         encodervideocmd = (
                                 config['FFMPEG'][codec]['pass1'] + str(
