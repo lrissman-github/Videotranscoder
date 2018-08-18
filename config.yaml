@@ -227,15 +227,15 @@ VP9Encoder:
 FFMPEG:
   maxbitrate: '-maxrate '
   avc:
-   copy: '-map_metadata -1 -hwaccel -vcodec copy -f matroska'
-   pass1: '-map_metadata -1 -hwaccel -vcodec libx264 -profile:v high -level 41 -f matroska -preset fast -b:v '
-   pass2: '-map_metadata -1 -hwaccel -vcodec libx264 -profile:v high -level 41 -f matroska -preset slow -b:v '
-   crf: '-map_metadata -1 -hwaccel -vcodec libx264 -profile:v high -level 41 -f matroska -preset slow -crf '
+   copy: '-map_metadata -1 -hwaccel -vcodec copy -f mp4'
+   pass1: '-map_metadata -1 -hwaccel -vcodec libx264 -profile:v high -level 41 -f mp4 -preset fast -b:v '
+   pass2: '-map_metadata -1 -hwaccel -vcodec libx264 -profile:v high -level 41 -f mp4 -preset slow -b:v '
+   crf: '-map_metadata -1 -hwaccel -vcodec libx264 -profile:v high -level 41 -f mp4 -preset slow -crf '
   hevc:
-   copy: '-map_metadata -1 -hwaccel -vcodec copy -f matroska'
-   pass1: '-map_metadata -1 -hwaccel -vcodec libx265 -f matroska -preset fast -b:v '
-   pass2: '-map_metadata -1 -hwaccel -vcodec libx265 -f matroska -preset slow -b:v '
-   crf: '-map_metadata -1 -hwaccel -vcodec libx265 -f matroska -preset fast -x265-params crf='
+   copy: '-map_metadata -1 -hwaccel -vcodec copy -f mp4'
+   pass1: '-map_metadata -1 -hwaccel -vcodec libx265 -f mp4 -preset fast -b:v '
+   pass2: '-map_metadata -1 -hwaccel -vcodec libx265 -f mp4 -preset slow -b:v '
+   crf: '-map_metadata -1 -hwaccel -vcodec libx265 -f mp4 -preset fast -x265-params crf='
   vp9:  #incomplete
    copy: '-map_metadata -1 -hwaccel -vcodec copy'
    pass1: '-map_metadata -1 -hwaccel -vcodec libvpx-vp9 -f webm -quality good -b:v '
